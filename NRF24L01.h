@@ -1,6 +1,5 @@
-
-#ifndef NRF24L01_H
-#define NRF24L01_H
+#ifndef TEST3_NRF24L01_H
+#define TEST3_NRF24L01_H
 
 #include "cstring"
 #include "functional"
@@ -10,14 +9,15 @@ class NRF24 {
   std::function<void()> CE_LOW, CE_HIGH, CS_LOW, CS_HIGH;
   std::function<void(uint8_t *TxData, uint8_t *RxData, uint16_t size)>
       SPI_TransmitReceive;
-  uint8_t *write_buffer = new uint8_t(33);
-  uint8_t *read_buffer = new uint8_t(33);
+  uint8_t *write_buffer = new uint8_t[33];
+  uint8_t *read_buffer = new uint8_t[33];
+  uint8_t *fifo_buffer = new uint8_t[33];
   std::function<void(uint8_t *, uint16_t)> received_callback;
   std::function<void()> sent_callback, unsent_callback;
 
 public:
-  uint8_t *Tx_Address = nullptr;
-  uint8_t *Rx_Address = nullptr;
+  uint8_t *Tx_Address = new uint8_t[5];
+  uint8_t *Rx_Address = new uint8_t[5];
 
   NRF24(void (*CE_LOW)(), void (*CE_HIGH)(), void (*CS_LOW)(),
         void (*CS_HIGH)(),
@@ -49,7 +49,7 @@ public:
 
   void write_fifo(uint8_t *data, uint16_t size);
 
-  uint16_t read_fifo(uint8_t *&buffer, bool clear = true);
+  uint16_t read_fifo(uint8_t *buffer, bool clear = true);
 
   void transmit(
       uint8_t *data, uint16_t size, void (*resolve)() = []() {},

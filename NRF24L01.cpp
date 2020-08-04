@@ -1,4 +1,3 @@
-
 #include "NRF24L01.h"
 
 /**
@@ -183,14 +182,14 @@ void NRF24::write_fifo(uint8_t *data, uint16_t size) {
  * @param clear bool If clear IRQ after reading.
  * @return length of data
  */
-uint16_t NRF24::read_fifo(uint8_t *&buffer, bool clear) {
+uint16_t NRF24::read_fifo(uint8_t *buffer, bool clear) {
   write_buffer[0] = '\x60';
   SPI_wrapped(write_buffer, read_buffer, 2);
   uint8_t data_size = read_buffer[1];
   uint8_t stat = read_buffer[0];
   write_buffer[0] = '\x61';
-  SPI_wrapped(write_buffer, read_buffer, data_size + 1);
-  buffer = read_buffer + 1;
+  SPI_wrapped(write_buffer, fifo_buffer, data_size + 1);
+  memcpy(buffer, fifo_buffer + 1, data_size);
   if (clear) {
     write_reg(0x07, stat & 0b01001111u);
   }
@@ -285,7 +284,7 @@ void NRF24::IRQ_Handler() {
   uint8_t stat = read_stat();
   set_mode_standby();
   if (stat & 0b01000000u) {
-    // receive data
+    // read data from fifo
     uint16_t size = read_fifo(read_buffer, false);
     // call custom function
     received_callback(read_buffer, size);
